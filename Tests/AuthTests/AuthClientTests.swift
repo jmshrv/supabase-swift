@@ -85,6 +85,26 @@ final class AuthClientTests: XCTestCase {
     expectNoDifference(stateChange?.event, .initialSession)
     expectNoDifference(stateChange?.session, session)
   }
+  
+  func testInMemoryStorageInitializer() async throws {
+      let sut = AuthClient(
+        configuration: .init(
+            url: URL(string: "http://localhost:54321/auth/v1")!,
+            localStorage: InMemoryLocalStorage()
+        )
+      )
+    
+    XCTAssertNotNil(sut)
+    XCTAssert(Dependencies[sut.clientID].configuration.localStorage is InMemoryLocalStorage)
+    
+    // Test that it works without global storage
+    let session = Session.validSession
+    Dependencies[sut.clientID].sessionStorage.store(session)
+    
+    // Verify session can be retrieved
+    let retrievedSession = try await sut.session
+    XCTAssertEqual(retrievedSession.accessToken, session.accessToken)
+  }
 
   func testSignOut() async throws {
     Mock(

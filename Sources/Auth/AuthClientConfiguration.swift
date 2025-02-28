@@ -46,6 +46,48 @@ extension AuthClient {
 
     /// Set to `true` if you want to automatically refresh the token before expiring.
     public let autoRefreshToken: Bool
+    
+    /// Creates a configuration with in-memory storage that doesn't persist data.
+    /// This is useful for creating auth clients that don't use global storage.
+    ///
+    /// - Parameters:
+    ///   - url: The base URL of the Auth server.
+    ///   - headers: Custom headers to be included in requests.
+    ///   - flowType: The authentication flow type.
+    ///   - redirectToURL: Default URL to be used for redirect on the flows that requires it.
+    ///   - storageKey: Optional key name used for storing tokens in local storage.
+    ///   - logger: The logger to use.
+    ///   - encoder: The JSON encoder to use for encoding requests.
+    ///   - decoder: The JSON decoder to use for decoding responses.
+    ///   - fetch: The asynchronous fetch handler for network requests.
+    ///   - autoRefreshToken: Set to `true` if you want to automatically refresh the token before expiring.
+    /// - Returns: A configuration with in-memory storage.
+    public static func withInMemoryStorage(
+      url: URL? = nil,
+      headers: [String: String] = [:],
+      flowType: AuthFlowType = Configuration.defaultFlowType,
+      redirectToURL: URL? = nil,
+      storageKey: String? = nil,
+      logger: (any SupabaseLogger)? = nil,
+      encoder: JSONEncoder = AuthClient.Configuration.jsonEncoder,
+      decoder: JSONDecoder = AuthClient.Configuration.jsonDecoder,
+      fetch: @escaping FetchHandler = { try await URLSession.shared.data(for: $0) },
+      autoRefreshToken: Bool = AuthClient.Configuration.defaultAutoRefreshToken
+    ) -> Configuration {
+      return Configuration(
+        url: url,
+        headers: headers,
+        flowType: flowType,
+        redirectToURL: redirectToURL,
+        storageKey: storageKey,
+        localStorage: InMemoryLocalStorage(),
+        logger: logger,
+        encoder: encoder,
+        decoder: decoder,
+        fetch: fetch,
+        autoRefreshToken: autoRefreshToken
+      )
+    }
 
     /// Initializes a AuthClient Configuration with optional parameters.
     ///
